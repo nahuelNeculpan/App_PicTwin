@@ -1,0 +1,22 @@
+
+ebean:
+    dumpMetricsOnShutdown: true
+    dumpMetricsOptions: loc, sql, hash
+    ddl:
+        generate: true
+        run: true
+    debug:
+        sql: true
+        lazyload: true
+    logging: all
+
+
+#database configuration datasource:
+datasource:
+    db:
+        username: pictwin
+        password: 79z#5RX&qq5z
+        platform: sqlite # h2, postgres, mysql, oracle, sqlserver
+        ddlMode: dropCreate # none I dropCreate | migrations
+        dbName: pictwin
+        url: jdbc:sqlite:database.db
