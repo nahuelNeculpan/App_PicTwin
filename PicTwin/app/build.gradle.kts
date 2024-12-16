@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.okhttp3.logging.interceptor)
 
     implementation(libs.hilt.android)
+    implementation(libs.androidx.runtime.saved.instance.state)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation)
 
