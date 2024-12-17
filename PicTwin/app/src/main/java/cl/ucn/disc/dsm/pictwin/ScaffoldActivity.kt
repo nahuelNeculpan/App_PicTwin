@@ -11,8 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
@@ -24,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import cl.ucn.disc.dsm.pictwin.ui.theme.PicTwinTheme
 
 /**
@@ -73,8 +79,17 @@ fun MainScaffold() {
 }
 
 @Composable
-fun Fab(onIncrement: () -> Unit) {
-
+fun Fab(
+    onIncrement: () -> Unit = { },
+    ) {
+    FloatingActionButton(
+        onClick = {
+            onIncrement()
+        },
+        containerColor = MaterialTheme.colorScheme.tertiary
+    ) {
+        Icon(Icons.Default.ThumbUp, contentDescription = "Up")
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +102,27 @@ fun BottomBar() {
         NavigationBarItem(
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
             label = { Text("Home") },
+            selected = true,
+            onClick = { /* Handle Home click */ }
+        )
+
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+            label = { Text("Profile") },
+            selected = false,
+            onClick = { /* Handle Profile click */ }
+        )
+
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+            label = { Text("Settings") },
+            selected = false,
+            onClick = { /* Handle Home click */ }
+        )
+
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+            label = { Text("Search") },
             selected = true,
             onClick = { /* Handle Home click */ }
         )
@@ -105,3 +141,10 @@ fun TopBar() {
     )
 }
 
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun MainScaffoldPreview() {
+    PicTwinTheme {
+        MainScaffold()
+    }
+}
