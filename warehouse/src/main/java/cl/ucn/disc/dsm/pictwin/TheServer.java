@@ -1,11 +1,14 @@
 /*
- *Copyright (c) 2024. Departamento de Ingenieria de Sistemas y Computacion
+ * Copyright (c) 2024. Departamento de Ingenieria de Sistemas y Computacion
  */
+
 package cl.ucn.disc.dsm.pictwin;
 
 import cl.ucn.disc.dsm.pictwin.services.Controller;
 import cl.ucn.disc.dsm.pictwin.web.Route;
 import cl.ucn.disc.dsm.pictwin.web.routes.Home;
+import cl.ucn.disc.dsm.pictwin.web.routes.PersonaLogin;
+import cl.ucn.disc.dsm.pictwin.web.routes.PersonaPic;
 import cl.ucn.disc.dsm.pictwin.web.routes.PersonaPicTwins;
 
 import io.ebean.DB;
@@ -16,36 +19,35 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CountDownLatch;
 
-/**The Server.*/
+/** The Server. */
 @Slf4j
 public class TheServer {
 
-    /**The Javalin web server.*/
+    /** The Javalin web server. */
     private static Javalin createJavalin() {
 
         // create and configure the Javalin web server
         return Javalin.create(
-                config->{
-                    //enable extensive logging
+                config -> {
+                    // enable extensive logging
                     config.requestLogger.http(
-                        (ctx, ms)->{
-                            log.debug("Served {} in {} ms.", ctx.fullUrl(), ms);
-                        });
+                            (ctx, ms) -> {
+                                log.debug("Served {} in {} ms.", ctx.fullUrl(), ms);
+                            });
 
-                    //enable compression
-                    config.http.gzipOnlyCompression();
+                    // enable compression
+                    config.http.gzipOnlyCompression(9);
 
                     // graceful shutdown
-                    config.jetty.modifyServer (server->server.setStopTimeout(5_000));
+                    config.jetty.modifyServer(server -> server.setStopTimeout(5_000));
                 });
-
     }
-    /** Add the Routes of Javalin.*/
+
+    /** Add the Routes of Javalin. */
     private static void addRoute(final @NonNull Route route, final @NonNull Javalin javalin) {
-        
 
         log.debug(
-                "Adding route with verb {} in path: {}",
+                "Adding route {} with verb {} in path: {}",
                 route.getClass().getSimpleName(),
                 route.getMethod(),
                 route.getPath());
@@ -61,69 +63,68 @@ public class TheServer {
                 javalin.put(route.getPath(), route.getHandler());
                 break;
             default:
-                throw new IllegalArgumentException("Method not supported: "+ route.getMethod());
+                throw new IllegalArgumentException("Method not supported: " + route.getMethod());
         }
     }
-    /** Starting point.*/
+
+    /** Starting point. */
     public static void main(String[] args) {
 
         // the controller
-        log.debug("Configuring Controller..");
-        Controller controller = new Controller (DB.getDefault());
-        if (controller.seed()){
+        log.debug("Configuring Controller ..");
+        Controller controller = new Controller(DB.getDefault());
+        if (controller.seed()) {
             log.debug("Database seeded.");
         }
 
-        log.debug("Configure TheServer..");
+        log.debug("Configure TheServer ..");
 
         // create the Javalin web server
         Javalin javalin = createJavalin();
 
         // add the routes
-        log.debug("Adding routes...");
+        log.debug("Adding routes ..");
 
-        //GET->/
-        addRoute(new Home(),javalin);
+        // GET -> /
+        addRoute(new Home(), javalin);
 
-        //GET->/api/personas/{ulid}/pictwins
+        // GET -> /api/personas/{ulid}/pictwins
         addRoute(new PersonaPicTwins(controller), javalin);
 
-        // TODO:implements the routes
+        // POST -> /api/personas
+        addRoute(new PersonaLogin(controller), javalin);
 
-        // POST->/api/personas
-        //addRoute(new PersonaLogin(controller), javalin);
+        // POST -> /api/personas/{ulid}/pic
+        addRoute(new PersonaPic(controller), javalin);
 
-        //POST/api/personas/{ulid/pic
-        //addRoute(new PersonaPic(controller), javalin);
-
-        //shutdown latch
+        // shutdown latch
         CountDownLatch latch = new CountDownLatch(1);
 
         // add the shutdown hook
         Runtime.getRuntime()
                 .addShutdownHook(
                         new Thread(
-                                ()->{
-                                    //stop server
+                                () -> {
+                                    // stop server
                                     javalin.stop();
 
-                                    //shutdown the database
+                                    // shutdown the database
                                     DB.getDefault().shutdown();
 
                                     latch.countDown();
                                 }));
 
         // start the server
-        log.debug("Starting the server..");
+        log.debug("Starting the server ..");
         javalin.start(7000);
 
-        try{
+        try {
             latch.await();
         } catch (InterruptedException e) {
             log.debug("Server shutdown interrupted.", e);
             Thread.currentThread().interrupt();
         }
+
         log.debug("Done.");
     }
 }
-
